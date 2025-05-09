@@ -26,7 +26,7 @@ and if you want an explanation of the code, scroll down below.
 
 
 
-3. Open hw2_Q1-master. Double click hw2_Q1-master and opne OpenglViewer.sln
+3. Open cg_hw6_Q2-master. Double click cg_hw6_Q2-master and opne OpenglViewer.sln
 
 ![image](https://github.com/user-attachments/assets/9466e7d8-84e5-4852-9403-da308e22baf5)
 
