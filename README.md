@@ -36,6 +36,9 @@ and if you want an explanation of the code, scroll down below.
 
 ![image](https://github.com/user-attachments/assets/9cd21ee6-6d94-4880-9709-f9271e5b725c)
 
+I couldn't find out why the result was little bit diffent. 
+
+Looking closely, the light forms a square. So, I think Gouraud Shading work successful.
 
 ## Code explanation
 
