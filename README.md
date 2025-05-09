@@ -22,7 +22,7 @@ and if you want an explanation of the code, scroll down below.
 
 3. Unzip a download file
 
-![image](https://github.com/user-attachments/assets/a5d0b5b4-ca2e-476f-927b-c7776b0d996f)
+![image](https://github.com/user-attachments/assets/cce0d53a-fb98-4cd3-8acc-bd15898e987b)
 
 
 
