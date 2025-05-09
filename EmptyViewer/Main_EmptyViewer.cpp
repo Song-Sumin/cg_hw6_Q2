@@ -107,7 +107,6 @@ vec3 compute_phong_lighting(vec3 pos, vec3 normal) {
     return clamp(color, 0.0f, 1.0f);
 }
 
-// Flat shading: Use the normal at the centroid of the triangle
 void rasterize_triangle_gouraud(vec4 v0, vec4 v1, vec4 v2,
     vec3 c0, vec3 c1, vec3 c2) {
     vec3 p0 = vec3(v0) / v0.w;
@@ -195,7 +194,7 @@ void render_scene() {
 
 int main() {
     if (!glfwInit()) return -1;
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Flat Shading", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Gouraud Shading", NULL, NULL);
     if (!window) return -1;
     glfwMakeContextCurrent(window);
 
