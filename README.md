@@ -6,9 +6,9 @@ You need Visual Studio 2022 and window 11 OS.
 And C/C++ should be available in VS2022.
 
 ## About
-This project is about Flat Shading.
+This project is about Gouraud Shading.
 
-To view the result image, open Q1_result.png, 
+To view the result image, open Q2_result.png, 
 
 and if you want an explanation of the code, scroll down below.
 
@@ -20,7 +20,7 @@ and if you want an explanation of the code, scroll down below.
 
 
 
-3. Unzip a download file
+2. Unzip a download file
 
 ![image](https://github.com/user-attachments/assets/cce0d53a-fb98-4cd3-8acc-bd15898e987b)
 
@@ -28,14 +28,13 @@ and if you want an explanation of the code, scroll down below.
 
 3. Open hw2_Q1-master. Double click hw2_Q1-master and opne OpenglViewer.sln
 
-![image](https://github.com/user-attachments/assets/167dea26-bd07-4600-8694-6e796fed85f1)
+![image](https://github.com/user-attachments/assets/9466e7d8-84e5-4852-9403-da308e22baf5)
 
 
 
-5. click "F5" on your keybord. Then you will get the result.
+4. click "F5" on your keybord. Then you will get the result.
 
-![image](https://github.com/user-attachments/assets/3ccf0a60-e349-4a03-99b6-688749ccf6b9)
-
+![image](https://github.com/user-attachments/assets/9cd21ee6-6d94-4880-9709-f9271e5b725c)
 
 
 ## Code explanation
@@ -86,62 +85,63 @@ Only lightPos was hardcoded to fit the coordinate system of my code.
 
 
 ```
-// Flat shading: Use the normal at the centroid of the triangle
-void rasterize_triangle(vec4 v0, vec4 v1, vec4 v2, vec3 n0, vec3 n1, vec3 n2) {
+void rasterize_triangle_gouraud(vec4 v0, vec4 v1, vec4 v2, vec3 c0, vec3 c1, vec3 c2)
 
    ...
 
-    // Calculate the centroid and use its normal for flat shading
-    vec3 centroid = (p0 + p1 + p2) / 3.0f;
-    vec3 normal = normalize((n0 + n1 + n2) / 3.0f);
-
-   ...
-
-            if ((a >= 0 && b >= 0 && c >= 0) || (a <= 0 && b <= 0 && c <= 0)) {
-                // Barycentric interpolation  ---->>>추가
                 float area = std::abs((s1.x - s0.x) * (s2.y - s0.y) - (s2.x - s0.x) * (s1.y - s0.y));
                 float w0 = std::abs((s1.x - p.x) * (s2.y - p.y) - (s2.x - p.x) * (s1.y - p.y)) / area;
                 float w1 = std::abs((s2.x - p.x) * (s0.y - p.y) - (s0.x - p.x) * (s2.y - p.y)) / area;
                 float w2 = 1.0f - w0 - w1;
 
-                // Depth interpolation  ---->>>추가
                 float depth = w0 * p0.z + w1 * p1.z + w2 * p2.z;
                 int idx = y * WIDTH + x;
-                if (depth < DepthBuffer[idx]) {
-                    DepthBuffer[idx] = depth;
-
-                    // Flat shading uses the centroid normal  ---->>>추가
-                    vec3 color = compute_phong_lighting(centroid, normal);
-
-                    OutputImage[3 * idx + 0] = color.r;
-                    OutputImage[3 * idx + 1] = color.g;
-                    OutputImage[3 * idx + 2] = color.b;
-                }
-            }
-        }
-    }
-}
+               if (depth < DepthBuffer[idx]) {
+                DepthBuffer[idx] = depth;
+                vec3 color = w0 * c0 + w1 * c1 + w2 * c2;
+                OutputImage[3 * idx + 0] = color.r;
+                OutputImage[3 * idx + 1] = color.g;
+                OutputImage[3 * idx + 2] = color.b;
+               }
+   ...
 
 ```
-![image](https://github.com/user-attachments/assets/0f137e36-9023-4d87-a415-8ed7ffa1a465)
+![image](https://github.com/user-attachments/assets/1790d620-bade-4b7b-bd4b-f293ac391fcd)
 
-Flat shading is implemented using the per-triangle normal.
 
-vec3 color = compute_phong_lighting(centroid, normal); <- this code 
+Gouraud Shading is implemented using per-vertex normal.
 
-For each pixel inside the triangle, compute_phong_lighting is called to compute the shaded color.
+Interpolate the per-vertex normals using the barycentric weights w0, w1, and w2, and use the resulting normal to compute and output the final color.
 
 -----------
 ```
-void render_scene() 내부 추가
-        // Calculate per-triangle normals
-        vec3 n0 = normalize(cross(vec3(gVertices[gIndexBuffer[i + 1]]) - vec3(gVertices[gIndexBuffer[i]]),
-            vec3(gVertices[gIndexBuffer[i + 2]]) - vec3(gVertices[gIndexBuffer[i]])));
+void render_scene() {
+   ...
 
-        // Rasterize the triangle with flat shading
-        rasterize_triangle(v0, v1, v2, n0, n0, n0);
+    std::vector<vec3> VertexColors(gVertices.size());
+    for (int i = 0; i < gVertices.size(); ++i) {
+        vec3 pos = vec3(model * vec4(gVertices[i], 1.0f)); 
+        vec3 normal = normalize(mat3(transpose(inverse(model))) * gVertices[i]); 
+        VertexColors[i] = compute_phong_lighting(pos, normal);
+    }
+
+    for (int i = 0; i < gIndexBuffer.size(); i += 3) {
+        int ia = gIndexBuffer[i];
+        int ib = gIndexBuffer[i + 1];
+        int ic = gIndexBuffer[i + 2];
+
+        vec4 v0 = MVP * vec4(gVertices[ia], 1.0f);
+        vec4 v1 = MVP * vec4(gVertices[ib], 1.0f);
+        vec4 v2 = MVP * vec4(gVertices[ic], 1.0f);
+
+        rasterize_triangle_gouraud(v0, v1, v2,
+            VertexColors[ia], VertexColors[ib], VertexColors[ic]);
+    }
+}
 ```
-Computes the flat normal (per-triangle normal) by taking the cross product of two edges of the triangle.
+![image](https://github.com/user-attachments/assets/4533f093-941d-4b6e-b57a-c417e698039b)
+
+Computes the vertex normal.
 
 Additional parameters were added to the rasterize_triangle
 
